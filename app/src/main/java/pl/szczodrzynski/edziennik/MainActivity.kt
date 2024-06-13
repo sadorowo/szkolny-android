@@ -1,5 +1,6 @@
 package pl.szczodrzynski.edziennik
 
+import android.annotation.SuppressLint
 import android.app.ActivityManager
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -1211,9 +1212,9 @@ class MainActivity : AppCompatActivity(), CoroutineScope {
         drawer.addProfileSettings(*drawerProfiles.toTypedArray())
     }
 
+    @SuppressLint("MissingSuperCall")
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        super.onBackPressed()
         if (App.config.ui.openDrawerOnBackPressed) {
             if (drawer.isOpen)
                 navigateUp()
