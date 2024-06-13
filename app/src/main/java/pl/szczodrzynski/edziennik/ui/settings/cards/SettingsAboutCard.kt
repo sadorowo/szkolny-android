@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import pl.szczodrzynski.edziennik.App
 import pl.szczodrzynski.edziennik.BuildConfig
 import pl.szczodrzynski.edziennik.R
+import pl.szczodrzynski.edziennik.data.api.szkolny.response.Update
 import pl.szczodrzynski.edziennik.ext.after
 import pl.szczodrzynski.edziennik.ext.resolveAttr
 import pl.szczodrzynski.edziennik.sync.UpdateWorker
@@ -43,15 +44,12 @@ class SettingsAboutCard(util: SettingsUtil) : SettingsCard(util), CoroutineScope
     override fun buildCard(): MaterialAboutCard =
         util.createCard(
             null,
-            items = listOf(),
-            itemsMore = listOf(),
+            items = ::getItems,
+            itemsMore = ::getItemsMore,
             backgroundColor = R.attr.colorPrimaryContainer.resolveAttr(activity)
         ).also {
             it.items.addAll(getItems(it))
         }
-
-    override fun getItems() = listOf<MaterialAboutItem>()
-    override fun getItemsMore() = listOf<MaterialAboutItem>()
 
     private val versionDetailsItem by lazy {
         util.createActionItem(
@@ -64,7 +62,7 @@ class SettingsAboutCard(util: SettingsUtil) : SettingsCard(util), CoroutineScope
         )
     }
 
-    private fun getItems(card: MaterialAboutCard) = listOf(
+    override fun getItems(card: MaterialAboutCard) = listOf(
         util.createTitleItem(),
 
         util.createActionItem(
@@ -113,7 +111,17 @@ class SettingsAboutCard(util: SettingsUtil) : SettingsCard(util), CoroutineScope
                 icon = CommunityMaterial.Icon3.cmd_update
             ) {
                 launch {
-                    UpdateWorker.runNow(app)
+                    val channel = if (App.devMode)
+                        Update.Type.BETA
+                    else
+                        Update.Type.RC
+                    val result = app.updateManager.checkNow(channel, notify = false)
+                    val update = result.getOrNull()
+                    // the dialog is shown by MainActivity (EventBus)
+                    when {
+                        result.isFailure -> Toast.makeText(app, app.getString(R.string.notification_cant_check_update), Toast.LENGTH_SHORT).show()
+                        update == null -> Toast.makeText(app, app.getString(R.string.notification_no_update), Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         )),

@@ -31,6 +31,7 @@ import pl.szczodrzynski.edziennik.data.api.events.ApiTaskAllFinishedEvent
 import pl.szczodrzynski.edziennik.data.api.events.ApiTaskErrorEvent
 import pl.szczodrzynski.edziennik.data.api.events.ApiTaskFinishedEvent
 import pl.szczodrzynski.edziennik.data.db.entity.Lesson
+import pl.szczodrzynski.edziennik.data.db.enums.FeatureType
 import pl.szczodrzynski.edziennik.data.db.full.LessonFull
 import pl.szczodrzynski.edziennik.databinding.DialogGenerateBlockTimetableBinding
 import pl.szczodrzynski.edziennik.ext.*
@@ -108,12 +109,10 @@ class GenerateBlockTimetableDialog(
                 .show()
 
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.onClick {
-            app.permissionManager.requestStoragePermission(activity, permissionMessage = R.string.permissions_generate_timetable) {
-                when (b.weekSelectionRadioGroup.checkedRadioButtonId) {
-                    R.id.withChangesCurrentWeekRadio -> generateBlockTimetable(weekCurrentStart, weekCurrentEnd)
-                    R.id.withChangesNextWeekRadio -> generateBlockTimetable(weekNextStart, weekNextEnd)
-                    R.id.forSelectedWeekRadio -> selectDate()
-                }
+            when (b.weekSelectionRadioGroup.checkedRadioButtonId) {
+                R.id.withChangesCurrentWeekRadio -> generateBlockTimetable(weekCurrentStart, weekCurrentEnd)
+                R.id.withChangesNextWeekRadio -> generateBlockTimetable(weekNextStart, weekNextEnd)
+                R.id.forSelectedWeekRadio -> selectDate()
             }
         }
     }}
@@ -202,9 +201,7 @@ class GenerateBlockTimetableDialog(
 
             EdziennikTask.syncProfile(
                     profileId = App.profileId,
-                    viewIds = listOf(
-                            MainActivity.DRAWER_ITEM_TIMETABLE to 0
-                    ),
+                    featureTypes = setOf(FeatureType.TIMETABLE),
                     arguments = JsonObject(
                             "weekStart" to weekStart.stringY_m_d
                     )

@@ -850,7 +850,7 @@
     <string name="settings_about_licenses_text">Open-source licenses</string>
     <string name="settings_about_privacy_policy_text">Privacy policy</string>
     <string name="settings_card_register_title">E-register</string>
-    <string name="settings_about_title_subtext">© Kuba Szczodrzyński &amp;&amp; Kacper Ziubryniewicz\nSeptember 2018 – 2022</string>
+    <string name="settings_about_title_subtext">© Kuba Szczodrzyński, September 2018 – 2023</string>
     <string name="settings_about_update_subtext">Click to check for updates</string>
     <string name="settings_about_update_text">Update</string>
     <string name="settings_about_version_text">Version</string>
@@ -901,10 +901,6 @@
     <string name="settings_register_count_in_seconds_text">Count time in seconds</string>
     <string name="settings_register_dont_count_zero_text">Don\'t count 0 grade to average</string>
     <string name="settings_register_login_not_implemented_text">This e-register isn\'t implemented yet.</string>
-    <string name="settings_register_shared_events_dialog_disabled_text">You won\'t receive shared events anymore and you won\'t be able to share them.</string>
-    <string name="settings_register_shared_events_dialog_enabled_text">You will receive shared events from other people in your class.</string>
-    <string name="settings_register_shared_events_subtext">Share exams in your class</string>
-    <string name="settings_register_shared_events_text">Enable Event sharing</string>
     <string name="settings_register_show_teacher_absences_text">Show teacher absences in Agenda</string>
     <string name="settings_sync_customize_endpoint_announcements">Notice board</string>
     <string name="settings_sync_customize_endpoint_attendance">Attendances</string>
@@ -1358,7 +1354,6 @@
     <string name="home_archive_close_no_target_text">Child %s does not have a profile on this account in the current school year. Probably this profile has been deleted or the student no longer attends this class.\n\nTo go to the current profile, select a student from the list or log in to their account with the Add student button.</string>
     <string name="build_invalid_no_remote_repo">A reference to a remote repository was not found. Make sure you are using the official repository fork and verify your Gradle configuration.</string>
     <string name="login_mode_mobidziennik_web_guide">"Enter the data you use to log in to the MobiDziennik website. As the server address, you can enter the address of the website where you have MobiDziennik. "</string>
-    <string name="permissions_generate_timetable">In order to be able to save the generated timetable, you must grant access rights to the device\'s memory.\n\nClick OK to grant permissions.</string>
     <string name="login_summary_account_child">(Child)</string>
     <string name="login_summary_account_parent">(Parent)</string>
     <string name="menu_teachers">Teachers</string>
@@ -1384,7 +1379,7 @@
     <string name="notes_type_grade">Grade</string>
     <string name="privacy_policy_dialog_html"><![CDATA[By using the application, you confirm that you have <a href="https://szkolny.eu/privacy-policy">read the Privacy Policy</a> and accept its provisions.<br /><br />The authors of the application are not responsible for the use of the Szkolny.eu application.]]></string>
     <string name="login_chooser_version_format">Szkolny.eu v%s\n%s</string>
-    <string name="agenda_config_appearance">Appearance</string>
+    <string name="config_appearance">Appearance</string>
     <string name="agenda_config_elearning">Online learning</string>
     <string name="event_type_elearning">online lesson</string>
     <string name="menu_messages_config">Messages settings</string>
@@ -1438,4 +1433,5 @@
     <string name="dialog_lesson_attendance_details">Details</string>
     <string name="menu_agenda_config">Agenda settings</string>
     <string name="registration_config_note_sharing_title">Share notes</string>
+    <string name="home_timetable_all_lessons">All lessons:</string>
 </resources>

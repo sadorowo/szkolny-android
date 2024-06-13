@@ -35,8 +35,8 @@ class SettingsUtil(
 
     fun createCard(
         titleRes: Int?,
-        items: List<MaterialAboutItem>,
-        itemsMore: List<MaterialAboutItem>,
+        items: (card: MaterialAboutCard) -> List<MaterialAboutItem>,
+        itemsMore: (card: MaterialAboutCard) -> List<MaterialAboutItem>,
         backgroundColor: Int? = null,
         theme: Int? = null
     ): MaterialAboutCard {
@@ -45,10 +45,11 @@ class SettingsUtil(
             .cardColor(backgroundColor ?: 0)
             .theme(theme ?: 0)
             .build()
-        card.items.addAll(items)
+        card.items.addAll(items(card))
 
-        if (itemsMore.isNotEmpty()) {
-            card.items.add(createMoreItem(card, itemsMore))
+        val more = itemsMore(card)
+        if (more.isNotEmpty()) {
+            card.items.add(createMoreItem(card, more))
         }
 
         return card

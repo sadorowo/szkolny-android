@@ -48,6 +48,7 @@ class EventManager(val app: App) : CoroutineScope {
         title: TextView,
         event: EventFull,
         showType: Boolean = true,
+        showSubject: Boolean = false,
         showNotes: Boolean = true,
         doneIconColor: Int? = null
     ) {
@@ -55,10 +56,12 @@ class EventManager(val app: App) : CoroutineScope {
         val hasReplacingNotes = event.hasReplacingNotes()
 
         title.text = listOfNotNull(
-            if (event.addedManually) "{cmd-clipboard-edit-outline} " else null,
+            if (event.addedManually && !event.isSharedReceived) "{cmd-calendar-edit} " else null,
+            if (event.isSharedReceived) "{cmd-share-variant} " else null,
             if (event.hasNotes() && hasReplacingNotes && showNotes) "{cmd-swap-horizontal} " else null,
             if (event.hasNotes() && !hasReplacingNotes && showNotes) "{cmd-playlist-edit} " else null,
             if (showType) "${event.typeName ?: "wydarzenie"} - " else null,
+            if (showSubject) event.subjectLongName?.plus(" - ") else null,
             topicSpan,
         ).concat()
 
@@ -77,6 +80,8 @@ class EventManager(val app: App) : CoroutineScope {
     fun setLegendText(legend: IconicsTextView, event: EventFull, showNotes: Boolean = true) {
         legend.text = listOfNotNull(
             if (event.addedManually) R.string.legend_event_added_manually else null,
+            if (event.isSharedSent) R.string.legend_event_shared_sent else null,
+            if (event.isSharedReceived) R.string.legend_event_shared_received else null,
             if (event.isDone) R.string.legend_event_is_done else null,
             if (showNotes) NoteManager.getLegendText(event) else null,
         ).map { legend.context.getString(it) }.join("\n")

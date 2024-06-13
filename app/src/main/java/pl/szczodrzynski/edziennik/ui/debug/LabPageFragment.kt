@@ -11,6 +11,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 import androidx.sqlite.db.SimpleSQLiteQuery
 import com.chuckerteam.chucker.api.Chucker
 import com.chuckerteam.chucker.api.Chucker.SCREEN_HTTP
@@ -21,6 +22,8 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import pl.szczodrzynski.edziennik.*
 import pl.szczodrzynski.edziennik.config.Config
+import pl.szczodrzynski.edziennik.data.api.szkolny.interceptor.SignatureInterceptor
+import pl.szczodrzynski.edziennik.data.db.entity.EventType.Companion.SOURCE_DEFAULT
 import pl.szczodrzynski.edziennik.databinding.LabFragmentBinding
 import pl.szczodrzynski.edziennik.ext.*
 import pl.szczodrzynski.edziennik.ui.base.lazypager.LazyFragment
@@ -60,8 +63,10 @@ class LabPageFragment : LazyFragment(), CoroutineScope {
             b.last10unseen.isVisible = false
             b.fullSync.isVisible = false
             b.clearProfile.isVisible = false
+            b.clearEndpointTimers.isVisible = false
             b.rodo.isVisible = false
             b.removeHomework.isVisible = false
+            b.resetEventTypes.isVisible = false
             b.unarchive.isVisible = false
             b.profile.isVisible = false
         }
@@ -80,17 +85,26 @@ class LabPageFragment : LazyFragment(), CoroutineScope {
             app.db.teacherDao().query(SimpleSQLiteQuery("UPDATE teachers SET teacherSurname = \"\" WHERE profileId = ${App.profileId}"))
         }
         
-        b.fullSync.onClick { 
-            app.db.query(SimpleSQLiteQuery("UPDATE profiles SET empty = 1 WHERE profileId = ${App.profileId}"))
-            app.db.query(SimpleSQLiteQuery("DELETE FROM endpointTimers WHERE profileId = ${App.profileId}"))
+        b.fullSync.onClick {
+            app.profile.empty = true
+            app.profileSave()
         }
 
         b.clearProfile.onClick {
             ProfileRemoveDialog(activity, App.profileId, "FAKE", noProfileRemoval = true).show()
         }
 
+        b.clearEndpointTimers.onClick {
+            app.db.endpointTimerDao().clear(app.profileId)
+        }
+
         b.removeHomework.onClick {
             app.db.eventDao().getRawNow("UPDATE events SET homeworkBody = NULL WHERE profileId = ${App.profileId}")
+        }
+
+        b.resetEventTypes.onClick {
+            app.db.eventTypeDao().clearBySource(App.profileId, SOURCE_DEFAULT)
+            app.db.eventTypeDao().getAllWithDefaults(App.profile)
         }
 
         b.chucker.isChecked = App.enableChucker
@@ -141,6 +155,16 @@ class LabPageFragment : LazyFragment(), CoroutineScope {
             app.config.apiInvalidCert = null
         }
 
+        b.apiKey.setText(app.config.apiKeyCustom ?: SignatureInterceptor.API_KEY)
+        b.apiKey.doAfterTextChanged {
+            it?.toString()?.let { key ->
+                if (key == SignatureInterceptor.API_KEY)
+                    app.config.apiKeyCustom = null
+                else
+                    app.config.apiKeyCustom = key.takeValue()?.trim()
+            }
+        }
+
         b.rebuildConfig.onClick {
             App.config = Config(App.db)
         }
@@ -151,32 +175,43 @@ class LabPageFragment : LazyFragment(), CoroutineScope {
         b.profile.select(app.profileId.toLong())
         b.profile.setOnChangeListener {
             if (activity is MainActivity)
-                (activity as MainActivity).loadProfile(it.id.toInt())
+                (activity as MainActivity).navigate(profileId = it.id.toInt())
             return@setOnChangeListener true
+        }
+
+        b.clearCookies.onClick {
+            app.cookieJar.clearAllDomains()
         }
 
         val colorSecondary = android.R.attr.textColorSecondary.resolveAttr(activity)
         startCoroutineTimer(500L, 300L) {
-            val text = app.cookieJar.sessionCookies
-                    .map { it.cookie }
-                    .sortedBy { it.domain() }
-                    .groupBy { it.domain() }
-                    .map {
-                        listOf(
-                                it.key.asBoldSpannable(),
-                                ":\n",
-                                it.value
-                                        .sortedBy { it.name() }
-                                        .map {
-                                            listOf(
-                                                    "    ",
-                                                    it.name(),
-                                                    "=",
-                                                    it.value().decode().take(40).asItalicSpannable().asColoredSpannable(colorSecondary)
-                                            ).concat("")
-                                        }.concat("\n")
-                        ).concat("")
-                    }.concat("\n\n")
+            val text = app.cookieJar.getAllDomains()
+                .sortedBy { it.domain() }
+                .groupBy { it.domain() }
+                .map { pair ->
+                    listOf(
+                        pair.key.asBoldSpannable(),
+                        ":\n",
+                        pair.value
+                            .sortedBy { it.name() }
+                            .map { cookie ->
+                                listOf(
+                                    "    ",
+                                    if (cookie.persistent())
+                                        cookie.name()
+                                            .asUnderlineSpannable()
+                                    else
+                                        cookie.name(),
+                                    "=",
+                                    cookie.value()
+                                        .decode()
+                                        .take(40)
+                                        .asItalicSpannable()
+                                        .asColoredSpannable(colorSecondary),
+                                ).concat("")
+                            }.concat("\n")
+                    ).concat("")
+                }.concat("\n\n")
             b.cookies.text = text
         }
 

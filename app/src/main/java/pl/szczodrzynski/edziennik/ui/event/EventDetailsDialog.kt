@@ -27,6 +27,7 @@ import pl.szczodrzynski.edziennik.data.api.szkolny.SzkolnyApi
 import pl.szczodrzynski.edziennik.data.db.full.EventFull
 import pl.szczodrzynski.edziennik.databinding.DialogEventDetailsBinding
 import pl.szczodrzynski.edziennik.ext.*
+import pl.szczodrzynski.edziennik.ui.base.enums.NavTarget
 import pl.szczodrzynski.edziennik.ui.dialogs.base.BindingDialog
 import pl.szczodrzynski.edziennik.ui.notes.setupNotesButton
 import pl.szczodrzynski.edziennik.ui.timetable.TimetableFragment
@@ -113,9 +114,20 @@ class EventDetailsDialog(
 
         b.typeColor.background?.setTintColor(MaterialColors.harmonizeWithPrimary(b.root.context, event.eventColor))
 
-        b.details = mutableListOf(
+        val agendaSubjectImportant = event.subjectLongName != null
+                && App.config[event.profileId].ui.agendaSubjectImportant
+
+        b.name = if (agendaSubjectImportant)
+            event.subjectLongName
+        else
+            event.typeName
+
+        b.details = listOfNotNull(
+            if (agendaSubjectImportant)
+                event.typeName
+            else
                 event.subjectLongName,
-                event.teamName?.asColoredSpannable(colorSecondary)
+            event.teamName?.asColoredSpannable(colorSecondary)
         ).concat(bullet)
 
         b.addedBy.setText(
@@ -196,7 +208,7 @@ class EventDetailsDialog(
             val dateStr = event.date.stringY_m_d
 
             val intent =
-                    if (activity is MainActivity && activity.navTargetId == MainActivity.DRAWER_ITEM_TIMETABLE)
+                    if (activity is MainActivity && activity.navTarget == NavTarget.TIMETABLE)
                         Intent(TimetableFragment.ACTION_SCROLL_TO_DATE)
                     else if (activity is MainActivity)
                         Intent("android.intent.action.MAIN")
@@ -204,8 +216,10 @@ class EventDetailsDialog(
                         Intent(activity, MainActivity::class.java)
 
             intent.apply {
-                putExtra("fragmentId", MainActivity.DRAWER_ITEM_TIMETABLE)
-                putExtra("timetableDate", dateStr)
+                putExtras(
+                    "fragmentId" to NavTarget.TIMETABLE,
+                    "timetableDate" to dateStr,
+                )
             }
             if (activity is MainActivity)
                 activity.sendBroadcast(intent)

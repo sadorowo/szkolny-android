@@ -72,3 +72,19 @@ fun pendingIntentFlag(): Int {
         return PendingIntent.FLAG_IMMUTABLE
     return 0
 }
+
+fun pendingIntentMutable(): Int {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+        return PendingIntent.FLAG_MUTABLE
+    return 0
+}
+
+fun Int?.takeValue() = if (this == -1) null else this
+fun Int?.takePositive() = if (this == -1 || this == 0) null else this
+
+fun Long?.takeValue() = if (this == -1L) null else this
+fun Long?.takePositive() = if (this == -1L || this == 0L) null else this
+
+fun String?.takeValue() = if (this.isNullOrBlank()) null else this
+
+fun Any?.ignore() = Unit

@@ -49,7 +49,7 @@ class NotificationsAdapter(
         val date = Date.fromMillis(item.addedDate).formattedString
         val colorSecondary = android.R.attr.textColorSecondary.resolveAttr(activity)
 
-        b.notificationIcon.background = IconicsDrawable(app, item.getLargeIcon()).apply {
+        b.notificationIcon.background = IconicsDrawable(app, item.type.icon).apply {
             colorInt = getColorFromAttr(b.root.context, R.attr.colorPrimary)
         }
 
@@ -59,7 +59,7 @@ class NotificationsAdapter(
                 " • ",
                 date
         ).concat().asColoredSpannable(colorSecondary)
-        b.type.text = activity.getNotificationTitle(item.type)
+        b.type.text = item.type.titleRes.resolveString(activity)
 
         onItemClick?.let { listener ->
             b.root.onClick { listener(item) }

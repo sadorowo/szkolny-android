@@ -13,6 +13,7 @@ import pl.szczodrzynski.edziennik.data.db.entity.Message.Companion.TYPE_RECEIVED
 import pl.szczodrzynski.edziennik.data.db.entity.Message.Companion.TYPE_SENT
 import pl.szczodrzynski.edziennik.data.db.entity.Metadata
 import pl.szczodrzynski.edziennik.data.db.entity.Teacher
+import pl.szczodrzynski.edziennik.data.db.enums.MetadataType
 import pl.szczodrzynski.edziennik.data.db.full.MessageFull
 import pl.szczodrzynski.edziennik.data.db.full.MessageRecipientFull
 import pl.szczodrzynski.edziennik.ext.fixName
@@ -124,7 +125,7 @@ class LibrusMessagesGetMessage(override val data: DataLibrus,
                         val receiverId = teacher?.id ?: -1
                         teacher?.loginId = receiverLoginId
 
-                        val readDateText = message.select("readed").text()
+                        val readDateText = receiver.select("readed").text()
                         val readDate = when (readDateText.isNotNullNorEmpty()) {
                             true -> Date.fromIso(readDateText)
                             else -> 0
@@ -147,7 +148,7 @@ class LibrusMessagesGetMessage(override val data: DataLibrus,
             if (!messageObject.seen) {
                 data.setSeenMetadataList.add(Metadata(
                         messageObject.profileId,
-                        Metadata.TYPE_MESSAGE,
+                        MetadataType.MESSAGE,
                         messageObject.id,
                         true,
                         true

@@ -25,13 +25,18 @@ import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.community.material.CommunityMaterial
 import com.mikepenz.iconics.utils.colorInt
 import com.mikepenz.iconics.utils.sizeDp
-import pl.szczodrzynski.edziennik.*
+import pl.szczodrzynski.edziennik.App
+import pl.szczodrzynski.edziennik.MainActivity
+import pl.szczodrzynski.edziennik.R
 import pl.szczodrzynski.edziennik.data.api.edziennik.EdziennikTask
 import pl.szczodrzynski.edziennik.data.db.entity.Lesson
 import pl.szczodrzynski.edziennik.data.db.entity.Lesson.Companion.TYPE_NO_LESSONS
 import pl.szczodrzynski.edziennik.ext.filterOutArchived
 import pl.szczodrzynski.edziennik.ext.getJsonObject
 import pl.szczodrzynski.edziennik.ext.pendingIntentFlag
+import pl.szczodrzynski.edziennik.ext.pendingIntentMutable
+import pl.szczodrzynski.edziennik.ext.putExtras
+import pl.szczodrzynski.edziennik.ui.base.enums.NavTarget
 import pl.szczodrzynski.edziennik.ui.widgets.LessonDialogActivity
 import pl.szczodrzynski.edziennik.ui.widgets.WidgetConfig
 import pl.szczodrzynski.edziennik.utils.models.Date
@@ -115,19 +120,11 @@ class WidgetTimetableProvider : AppWidgetProvider() {
                     0, refreshIntent, PendingIntent.FLAG_UPDATE_CURRENT or pendingIntentFlag())
             views.setOnClickPendingIntent(R.id.widgetTimetableRefresh, refreshPendingIntent)
 
-            views.setOnClickPendingIntent(R.id.widgetTimetableSync, getPendingSelfIntent(context, ACTION_SYNC_DATA))
+            views.setViewVisibility(R.id.widgetTimetableSync, View.GONE)
 
             views.setImageViewBitmap(
                 R.id.widgetTimetableRefresh,
                 IconicsDrawable(context, CommunityMaterial.Icon3.cmd_refresh).apply {
-                    colorInt = Color.WHITE
-                    sizeDp = if (config.bigStyle) 28 else 20
-                }.toBitmap()
-            )
-
-            views.setImageViewBitmap(
-                R.id.widgetTimetableSync,
-                IconicsDrawable(context, CommunityMaterial.Icon.cmd_download_outline).apply {
                     colorInt = Color.WHITE
                     sizeDp = if (config.bigStyle) 28 else 20
                 }.toBitmap()
@@ -333,8 +330,11 @@ class WidgetTimetableProvider : AppWidgetProvider() {
                     scrollPos = pos + 1
                 }
 
+                // remove notes from other profiles
+                lesson.filterNotes()
                 // set the subject and classroom name
-                model.subjectName = lesson.displaySubjectName
+                model.subjectName = lesson.getNoteSubstituteText(showNotes = true)
+                    ?: lesson.displaySubjectName
                 model.classroomName = lesson.displayClassroom
 
                 // set the bell sync to calculate progress in ListProvider
@@ -391,11 +391,11 @@ class WidgetTimetableProvider : AppWidgetProvider() {
                 headerIntent.putExtra("profileId", it)
             }
             displayingDate?.let {
-                headerIntent.putExtra("timetableDate", it.value)
+                headerIntent.putExtra("timetableDate", it.stringY_m_d)
             }
         }
-        headerIntent.putExtra("fragmentId", MainActivity.DRAWER_ITEM_TIMETABLE)
-        val headerPendingIntent = PendingIntent.getActivity(app, appWidgetId, headerIntent, pendingIntentFlag())
+        headerIntent.putExtras("fragmentId" to NavTarget.TIMETABLE)
+        val headerPendingIntent = PendingIntent.getActivity(app, appWidgetId, headerIntent, pendingIntentMutable())
         views.setOnClickPendingIntent(R.id.widgetTimetableHeader, headerPendingIntent)
 
         timetables!!.put(appWidgetId, models)
@@ -409,7 +409,7 @@ class WidgetTimetableProvider : AppWidgetProvider() {
         // create an intent used to display the lesson details dialog
         val itemIntent = Intent(app, LessonDialogActivity::class.java)
         itemIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK/* or Intent.FLAG_ACTIVITY_CLEAR_TASK*/)
-        val itemPendingIntent = PendingIntent.getActivity(app, appWidgetId, itemIntent, PendingIntent.FLAG_MUTABLE)
+        val itemPendingIntent = PendingIntent.getActivity(app, appWidgetId, itemIntent, pendingIntentMutable())
         views.setPendingIntentTemplate(R.id.widgetTimetableListView, itemPendingIntent)
 
         if (!unified)

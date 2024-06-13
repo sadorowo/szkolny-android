@@ -12,6 +12,7 @@ import pl.szczodrzynski.edziennik.data.api.edziennik.librus.data.LibrusApi
 import pl.szczodrzynski.edziennik.data.db.entity.Metadata
 import pl.szczodrzynski.edziennik.data.db.entity.Notice
 import pl.szczodrzynski.edziennik.data.db.entity.SYNC_ALWAYS
+import pl.szczodrzynski.edziennik.data.db.enums.MetadataType
 import pl.szczodrzynski.edziennik.ext.*
 import pl.szczodrzynski.edziennik.utils.models.Date
 
@@ -35,7 +36,7 @@ class LibrusApiNotices(override val data: DataLibrus,
                 val id = note.getLong("Id") ?: return@forEach
                 val text = note.getString("Text") ?: ""
                 val categoryId = note.getJsonObject("Category")?.getLong("Id") ?: -1
-                val teacherId = note.getJsonObject("AddedBy")?.getLong("Id") ?: -1
+                val teacherId = note.getJsonObject("Teacher")?.getLong("Id") ?: -1
                 val addedDate = note.getString("Date")?.let { Date.fromY_m_d(it) } ?: return@forEach
 
                 val type = when (note.getInt("Positive")) {
@@ -62,7 +63,7 @@ class LibrusApiNotices(override val data: DataLibrus,
                 data.metadataList.add(
                         Metadata(
                                 profileId,
-                                Metadata.TYPE_NOTICE,
+                                MetadataType.NOTICE,
                                 id,
                                 profile?.empty ?: false,
                                 profile?.empty ?: false

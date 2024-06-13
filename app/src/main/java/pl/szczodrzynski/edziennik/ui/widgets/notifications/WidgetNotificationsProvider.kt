@@ -23,7 +23,10 @@ import pl.szczodrzynski.edziennik.R
 import pl.szczodrzynski.edziennik.ext.Bundle
 import pl.szczodrzynski.edziennik.ext.getJsonObject
 import pl.szczodrzynski.edziennik.ext.pendingIntentFlag
+import pl.szczodrzynski.edziennik.ext.pendingIntentMutable
+import pl.szczodrzynski.edziennik.ext.putExtras
 import pl.szczodrzynski.edziennik.receivers.SzkolnyReceiver
+import pl.szczodrzynski.edziennik.ui.base.enums.NavTarget
 import pl.szczodrzynski.edziennik.ui.widgets.WidgetConfig
 
 class WidgetNotificationsProvider : AppWidgetProvider() {
@@ -48,7 +51,7 @@ class WidgetNotificationsProvider : AppWidgetProvider() {
             val syncIntent = SzkolnyReceiver.getIntent(context, Bundle(
                     "task" to "SyncRequest"
             ))
-            val syncPendingIntent = PendingIntent.getBroadcast(context, 0, syncIntent, pendingIntentFlag())
+            val syncPendingIntent = PendingIntent.getBroadcast(context, 0, syncIntent, pendingIntentMutable())
             views.setOnClickPendingIntent(R.id.widgetNotificationsSync, syncPendingIntent)
 
             views.setImageViewBitmap(
@@ -69,13 +72,13 @@ class WidgetNotificationsProvider : AppWidgetProvider() {
 
             val itemIntent = Intent(context, MainActivity::class.java)
             itemIntent.action = Intent.ACTION_MAIN
-            val itemPendingIntent = PendingIntent.getActivity(context, 0, itemIntent, pendingIntentFlag())
+            val itemPendingIntent = PendingIntent.getActivity(context, appWidgetId, itemIntent, pendingIntentMutable())
             views.setPendingIntentTemplate(R.id.widgetNotificationsListView, itemPendingIntent)
 
             val headerIntent = Intent(context, MainActivity::class.java)
             headerIntent.action = Intent.ACTION_MAIN
-            headerIntent.putExtra("fragmentId", MainActivity.DRAWER_ITEM_NOTIFICATIONS)
-            val headerPendingIntent = PendingIntent.getActivity(context, 0, headerIntent, pendingIntentFlag())
+            headerIntent.putExtras("fragmentId" to NavTarget.NOTIFICATIONS)
+            val headerPendingIntent = PendingIntent.getActivity(context, appWidgetId, headerIntent, pendingIntentMutable())
             views.setOnClickPendingIntent(R.id.widgetNotificationsHeader, headerPendingIntent)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
